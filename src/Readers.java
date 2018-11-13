@@ -23,9 +23,10 @@ public class Readers extends Thread {
 
         try {
             currentThread().sleep(1);
-            criticalRegion.readersInBase(false);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        criticalRegion.readersInBase(false);
     };
 }

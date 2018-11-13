@@ -8,7 +8,7 @@ import java.util.List;
 public class Main {
     private static CriticalRegion criticalRegion;
     private static int size = 100;
-    private static List<Object> arrayOfThreads = new ArrayList<>(size);
+    private static List<Object> arrayOfThreads = new ArrayList<>();
     private static int writersLength = 100;
     private static int readersLength = 0;
     
@@ -20,9 +20,16 @@ public class Main {
         int index = 0;
         boolean alreadyHaveObject;
 
-       while (index <= size) {
+        arrayOfThreads.clear();
+
+        while (index <= size) {
             random = randomNumbers.generate();
-            alreadyHaveObject = arrayOfThreads.get(random) == null;
+
+            try {
+                alreadyHaveObject = arrayOfThreads.get(random) == null;
+            } catch (IndexOutOfBoundsException ex) {
+                alreadyHaveObject = false;
+            }
 
             if (alreadyHaveObject) {
                 continue;
@@ -66,7 +73,8 @@ public class Main {
 
             readersLength++;
             writersLength--;
-            Object  object;
+
+            Object object;
 
             for (int i = 0; i >= size; i++) {
                 object = arrayOfThreads.get(i);
