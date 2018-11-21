@@ -3,19 +3,26 @@ import java.util.List;
 public class Readers extends Thread {
     private CriticalRegion criticalRegion;
     private static RandomNumbers randomNumbers;
-    private int range = 100;
+    private int range;
+    private Lock lock;
+    private int index;
     
-    public Readers(CriticalRegion criticalRegion, int range) {
+    public Readers(CriticalRegion criticalRegion, int range, Lock lock, int index) {
         randomNumbers = new RandomNumbers(range);
         this.criticalRegion = criticalRegion;
         this.range = range;
+        this.lock = lock;
+        this.index = index;
     }
 
-    @Override
-    public void run() {
+    public int getIndex() {
+        return index;
+    }
+
+    private void _accessRandomIndexInBd() {
         String word;
         int random;
-        criticalRegion.readersInBase(true);
+
         for (int i = 0; i <= range; i++) {
             random = randomNumbers.generate();
             word = criticalRegion.read(random);
@@ -26,7 +33,25 @@ public class Readers extends Thread {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
 
-        criticalRegion.readersInBase(false);
+    @Override
+    public void run() {
+        if (lock != null) {
+            try {
+                lock.block();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            _accessRandomIndexInBd();
+            lock.unblock();
+        } else {
+            criticalRegion.tryRead();
+
+            _accessRandomIndexInBd();
+
+            criticalRegion.stopRead();
+        }
     };
 }

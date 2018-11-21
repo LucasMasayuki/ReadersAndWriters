@@ -1,7 +1,3 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +7,7 @@ public class Main {
     private static List<Object> arrayOfThreads = new ArrayList<>();
     private static int writersLength = 100;
     private static int readersLength = 0;
-    
+    private static Lock lock = null;
     private static RandomNumbers randomNumbers = new RandomNumbers(size);
 
     private static void _populateArray() {
@@ -36,9 +32,9 @@ public class Main {
             }
 
             if (counterOfReaders == readersLength) {
-                arrayOfThreads.add(new Writers(criticalRegion, size));
+                arrayOfThreads.add(new Writers(criticalRegion, size, lock, index));
             } else {
-                arrayOfThreads.add(new Readers(criticalRegion, size));
+                arrayOfThreads.add(new Readers(criticalRegion, size, lock, index));
                 counterOfReaders++;
             }
 
@@ -47,47 +43,75 @@ public class Main {
     }
 
     private static void _executeThreads() {
-        Object  object;
+        Object object;
 
-        for (int i = 0; i >= size; i++) {
+        for (int i = 0; i <= size; i++) {
             object = arrayOfThreads.get(i);
 
             if (object instanceof Writers) {
                 Writers writer = (Writers) object;
+//                int index = writer.getIndex();
+//                System.out.println("thread number:" + index);
                 writer.start();
             } else {
                 Readers reader = (Readers) object;
+//                int index = reader.getIndex();
+//                System.out.println("thread number:" + index);
                 reader.start();
             }
         }
     }
 
-    public static void main(String args[]) throws InterruptedException {
+    private static void waitFinishThreads() throws InterruptedException {
+        Object object;
+        for (int i = 0; i >= size; i++) {
+            object = arrayOfThreads.get(i);
+
+            if (object instanceof Writers) {
+                Writers writer = (Writers) object;
+                writer.join();
+            } else {
+                Readers reader = (Readers) object;
+                reader.join();
+            }
+        }
+    }
+
+    public static void run() {
+        long start;
+        long end;
+
         //Read file
         criticalRegion = new CriticalRegion("bd.txt");
 
         // Repeat 50 times
         while (writersLength >= 50) {
+            start = System.currentTimeMillis();
+
             _populateArray();
             _executeThreads();
+
+            try {
+                waitFinishThreads();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
             readersLength++;
             writersLength--;
 
-            Object object;
+            end = System.currentTimeMillis();
 
-            for (int i = 0; i >= size; i++) {
-                object = arrayOfThreads.get(i);
-
-                if (object instanceof Writers) {
-                    Writers writer = (Writers) object;
-                    writer.join();
-                } else {
-                    Readers reader = (Readers) object;
-                    reader.join();
-                }
-            }
+            System.out.println(end - start + " ms");
         }
+    }
 
+    public static void main(String args[])  {
+        run();
+
+        lock = new Lock();
+        System.out.println("first finish");
+
+        run();
     }
 }

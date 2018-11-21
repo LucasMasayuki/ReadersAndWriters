@@ -7,23 +7,8 @@ import java.util.List;
 
 public class CriticalRegion {
     private List<String> data;
-    private boolean haveReaders = false;
-
-    public CriticalRegion(String fileName) {
-        data = _readFile(fileName);
-    }
-
-    public void readersInBase(boolean haveReaders) {
-        this.haveReaders = haveReaders;
-    }
-
-    public void write(int index, String word) {
-        data.set(index, word);
-    }
-
-    public String read(int index) {
-        return data.get(index);
-    }
+    private int numbersOfReaders = 0;
+    private boolean haveWriters = false;
 
     private List<String> _readFile(String fileName) {
         try {
@@ -44,5 +29,59 @@ public class CriticalRegion {
         }
 
         return null;
+    }
+
+    public CriticalRegion(String fileName) {
+        data = _readFile(fileName);
+    }
+
+    public boolean canWrite() {
+        return numbersOfReaders > 0 && !haveWriters;
+    }
+
+    public boolean canRead() {
+        return !haveWriters;
+    }
+
+    public void write(int index, String word) {
+        data.set(index, word);
+    }
+
+    public String read(int index) {
+        return data.get(index);
+    }
+
+    synchronized void tryWrite() {
+        while (!canWrite()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        haveWriters = true;
+    }
+
+    synchronized void tryRead() {
+        while (!canRead()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        this.numbersOfReaders++;
+    }
+
+    synchronized void stopWrite() {
+        haveWriters = false;
+        notifyAll();
+    }
+
+    synchronized void stopRead() {
+        this.numbersOfReaders--;
+        notifyAll();
     }
 }
