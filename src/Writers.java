@@ -36,6 +36,7 @@ public class Writers extends Thread {
     @Override
     public void run() {
         if (lock != null) {
+            System.out.println("second start");
             try {
                 lock.block();
             } catch (InterruptedException e) {

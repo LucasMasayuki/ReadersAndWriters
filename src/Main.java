@@ -7,6 +7,8 @@ public class Main {
     private static List<Object> arrayOfThreads = new ArrayList<>();
     private static int writersLength = 100;
     private static int readersLength = 0;
+    private static int timesForProportion = 50;
+    private static long average;
     private static Lock lock = null;
     private static RandomNumbers randomNumbers = new RandomNumbers(size);
 
@@ -77,7 +79,7 @@ public class Main {
         }
     }
 
-    public static void run() {
+    private static void _run() {
         long start;
         long end;
 
@@ -85,7 +87,7 @@ public class Main {
         criticalRegion = new CriticalRegion("bd.txt");
 
         // Repeat 50 times
-        while (writersLength >= 50) {
+        while (writersLength >= timesForProportion) {
             start = System.currentTimeMillis();
 
             _populateArray();
@@ -102,16 +104,37 @@ public class Main {
 
             end = System.currentTimeMillis();
 
-            System.out.println(end - start + " ms");
+            average += (end - start);
         }
+
+        average /= timesForProportion;
+
+        System.out.println("Average - " + writersLength + " writers and " + (100 - writersLength) + " readers - " + average + " ms");
+    }
+
+    private static void _reset() {
+        readersLength = 100;
+        writersLength = 0;
     }
 
     public static void main(String args[])  {
-        run();
+        Long start;
+        Long end;
 
+        start = System.currentTimeMillis();
+
+        _run();
+
+        end = System.currentTimeMillis();
+
+        System.out.println("Duration of 1 implamentation = " + (end - start) + " ms ");
+
+        _reset();
+
+        // Instance lock for the second implemantation without writer and readers
         lock = new Lock();
         System.out.println("first finish");
 
-        run();
+        _run();
     }
 }
