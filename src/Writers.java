@@ -23,7 +23,7 @@ public class Writers extends Thread {
 
         for (int i = 0; i <= range; i++) {
             random = randomNumbers.generate();
-            word = criticalRegion.read(random);
+            criticalRegion.write(random, word);
         }
 
         try {

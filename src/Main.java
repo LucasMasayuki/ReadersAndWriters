@@ -1,16 +1,16 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Main {
     private static CriticalRegion criticalRegion;
     private static int size = 100;
-    private static List<Object> arrayOfThreads = new ArrayList<>();
+    private static List<Object> arrayOfThreads;
     private static int writersLength = 100;
     private static int readersLength = 0;
     private static int timesForProportion = 50;
     private static long average;
     private static Lock lock = null;
-    private static RandomNumbers randomNumbers = new RandomNumbers(size);
 
     private static void _populateArray() {
         int counterOfReaders = 0;
@@ -18,36 +18,31 @@ public class Main {
         int index = 0;
         boolean alreadyHaveObject;
 
-        arrayOfThreads.clear();
+        RandomNumbers randomNumbers = new RandomNumbers(size);
+        arrayOfThreads = new ArrayList<>(Collections.nCopies(size, null));
 
-        while (index <= size) {
-            random = randomNumbers.generate();
-
-            try {
-                alreadyHaveObject = arrayOfThreads.get(random) == null;
-            } catch (IndexOutOfBoundsException ex) {
-                alreadyHaveObject = false;
-            }
-
-            if (alreadyHaveObject) {
-                continue;
-            }
+        while (index < size) {
+            random = randomNumbers.generateAndDontRepeat();
 
             if (counterOfReaders == readersLength) {
-                arrayOfThreads.add(new Writers(criticalRegion, size, lock, index));
+                arrayOfThreads.set(random, new Writers(criticalRegion, size, lock, index));
             } else {
-                arrayOfThreads.add(new Readers(criticalRegion, size, lock, index));
+                arrayOfThreads.set(random, new Readers(criticalRegion, size, lock, index));
                 counterOfReaders++;
             }
 
             index++;
         }
+//
+//        for (int i = 0; i < size; i++) {
+//            System.out.println(arrayOfThreads.get(i));
+//        }
     }
 
     private static void _executeThreads() {
         Object object;
 
-        for (int i = 0; i <= size; i++) {
+        for (int i = 0; i < size; i++) {
             object = arrayOfThreads.get(i);
 
             if (object instanceof Writers) {
@@ -80,36 +75,54 @@ public class Main {
     }
 
     private static void _run() {
+        long start_implemantation;
+        long end_implemantation;
         long start;
         long end;
 
         //Read file
         criticalRegion = new CriticalRegion("bd.txt");
 
+        System.out.println("Implamentation with readers and writers");
+
+        start_implemantation = System.currentTimeMillis();
+
         // Repeat 50 times
-        while (writersLength >= timesForProportion) {
-            start = System.currentTimeMillis();
+        while (writersLength != 0 && readersLength != 100) {
+            average = 0;
 
-            _populateArray();
-            _executeThreads();
+            for (int i = 0; i < timesForProportion; i++) {
+                _populateArray();
 
-            try {
-                waitFinishThreads();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                start = System.currentTimeMillis();
+
+                _executeThreads();
+
+                try {
+                    waitFinishThreads();
+                    System.out.println(i);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                System.out.println(i);
+
+                end = System.currentTimeMillis();
+
+                average += (end - start);
             }
+
+            average /= timesForProportion;
+
+            System.out.println("Average - " + writersLength + " writers and " + (100 - writersLength) + " readers - " + average + " ms");
 
             readersLength++;
             writersLength--;
-
-            end = System.currentTimeMillis();
-
-            average += (end - start);
         }
 
-        average /= timesForProportion;
+        end_implemantation = System.currentTimeMillis();
+        System.out.println("End of " + (end_implemantation - start_implemantation) + "ms");
 
-        System.out.println("Average - " + writersLength + " writers and " + (100 - writersLength) + " readers - " + average + " ms");
     }
 
     private static void _reset() {
