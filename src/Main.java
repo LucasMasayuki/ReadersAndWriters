@@ -5,7 +5,7 @@ import java.util.List;
 public class Main {
     private static CriticalRegion criticalRegion;
     private static int size = 100;
-    private static List<Object> arrayOfThreads;
+    private static List<Thread> arrayOfThreads = new ArrayList<>(Collections.nCopies(size, null));;
     private static int writersLength = 100;
     private static int readersLength = 0;
     private static int timesForProportion = 50;
@@ -16,18 +16,16 @@ public class Main {
         int counterOfReaders = 0;
         int random;
         int index = 0;
-        boolean alreadyHaveObject;
 
         RandomNumbers randomNumbers = new RandomNumbers(size);
-        arrayOfThreads = new ArrayList<>(Collections.nCopies(size, null));
 
         while (index < size) {
             random = randomNumbers.generateAndDontRepeat();
 
             if (counterOfReaders == readersLength) {
-                arrayOfThreads.set(random, new Writers(criticalRegion, size, lock, index));
+                arrayOfThreads.set(random, new Writers(criticalRegion, size, lock));
             } else {
-                arrayOfThreads.set(random, new Readers(criticalRegion, size, lock, index));
+                arrayOfThreads.set(random, new Readers(criticalRegion, size, lock));
                 counterOfReaders++;
             }
 
@@ -40,7 +38,7 @@ public class Main {
     }
 
     private static void _executeThreads() {
-        Object object;
+        Thread object;
 
         for (int i = 0; i < size; i++) {
             object = arrayOfThreads.get(i);
@@ -60,17 +58,10 @@ public class Main {
     }
 
     private static void waitFinishThreads() throws InterruptedException {
-        Object object;
+        Thread thread;
         for (int i = 0; i >= size; i++) {
-            object = arrayOfThreads.get(i);
-
-            if (object instanceof Writers) {
-                Writers writer = (Writers) object;
-                writer.join();
-            } else {
-                Readers reader = (Readers) object;
-                reader.join();
-            }
+            thread = arrayOfThreads.get(i);
+            thread.join();
         }
     }
 
@@ -100,12 +91,9 @@ public class Main {
 
                 try {
                     waitFinishThreads();
-                    System.out.println(i);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
-                System.out.println(i);
 
                 end = System.currentTimeMillis();
 

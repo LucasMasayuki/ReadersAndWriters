@@ -5,18 +5,12 @@ public class Readers extends Thread {
     private static RandomNumbers randomNumbers;
     private int range;
     private Lock lock;
-    private int index;
     
-    public Readers(CriticalRegion criticalRegion, int range, Lock lock, int index) {
+    public Readers(CriticalRegion criticalRegion, int range, Lock lock) {
         randomNumbers = new RandomNumbers(range);
         this.criticalRegion = criticalRegion;
         this.range = range;
         this.lock = lock;
-        this.index = index;
-    }
-
-    public int getIndex() {
-        return index;
     }
 
     private void _accessRandomIndexInBd() {

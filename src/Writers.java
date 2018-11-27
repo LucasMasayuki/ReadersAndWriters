@@ -4,18 +4,12 @@ public class Writers extends Thread {
     private int range;
     private static RandomNumbers randomNumbers;
     private Lock lock;
-    private int index;
 
-    public Writers(CriticalRegion criticalRegion, int range, Lock lock, int index) {
+    public Writers(CriticalRegion criticalRegion, int range, Lock lock) {
         randomNumbers = new RandomNumbers(range);
         this.criticalRegion = criticalRegion;
         this.range = range;
         this.lock = lock;
-        this.index = index;
-    }
-
-    public int getIndex() {
-        return index;
     }
 
     private void _accessRandomIndexInBd() {
