@@ -17,7 +17,7 @@ public class Readers extends Thread {
         String word;
         int random;
 
-        for (int i = 0; i <= range; i++) {
+        for (int i = 0; i < range; i++) {
             random = randomNumbers.generate();
             word = criticalRegion.read(random);
         }

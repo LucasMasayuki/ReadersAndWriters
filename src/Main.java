@@ -5,7 +5,7 @@ import java.util.List;
 public class Main {
     private static CriticalRegion criticalRegion;
     private static int size = 100;
-    private static List<Thread> arrayOfThreads = new ArrayList<>(Collections.nCopies(size, null));;
+    private static List<Thread> arrayOfThreads = new ArrayList<>(Collections.nCopies(size, null));
     private static int writersLength = 100;
     private static int readersLength = 0;
     private static int timesForProportion = 50;
@@ -18,6 +18,8 @@ public class Main {
         int index = 0;
 
         RandomNumbers randomNumbers = new RandomNumbers(size);
+
+        arrayOfThreads = new ArrayList<>(Collections.nCopies(size, null));
 
         while (index < size) {
             random = randomNumbers.generateAndDontRepeat();
@@ -45,13 +47,9 @@ public class Main {
 
             if (object instanceof Writers) {
                 Writers writer = (Writers) object;
-//                int index = writer.getIndex();
-//                System.out.println("thread number:" + index);
                 writer.start();
             } else {
                 Readers reader = (Readers) object;
-//                int index = reader.getIndex();
-//                System.out.println("thread number:" + index);
                 reader.start();
             }
         }
@@ -59,7 +57,7 @@ public class Main {
 
     private static void waitFinishThreads() throws InterruptedException {
         Thread thread;
-        for (int i = 0; i >= size; i++) {
+        for (int i = 0; i < size; i++) {
             thread = arrayOfThreads.get(i);
             thread.join();
         }
@@ -114,8 +112,8 @@ public class Main {
     }
 
     private static void _reset() {
-        readersLength = 100;
-        writersLength = 0;
+        writersLength = 100;
+        readersLength = 0;
     }
 
     public static void main(String args[])  {
@@ -135,7 +133,9 @@ public class Main {
         // Instance lock for the second implemantation without writer and readers
         lock = new Lock();
         System.out.println("first finish");
-
+        start = System.currentTimeMillis();
         _run();
+        end = System.currentTimeMillis();
+        System.out.println("Duration of 1 implamentation = " + (end - start) + " ms ");
     }
 }

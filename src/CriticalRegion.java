@@ -36,7 +36,7 @@ public class CriticalRegion {
     }
 
     public boolean canWrite() {
-        return numbersOfReaders > 0 && !haveWriters;
+        return numbersOfReaders == 0 && !haveWriters;
     }
 
     public boolean canRead() {
