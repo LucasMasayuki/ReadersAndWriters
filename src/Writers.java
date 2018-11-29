@@ -15,7 +15,7 @@ public class Writers extends Thread {
     private void _accessRandomIndexInBd() {
         int random;
 
-        for (int i = 0; i < range; i++) {
+        for (int i = 0; i <= range; i++) {
             random = randomNumbers.generate();
             criticalRegion.write(random, word);
         }

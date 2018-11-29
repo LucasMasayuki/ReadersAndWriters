@@ -4,7 +4,7 @@ import java.util.List;
 
 public class Main {
     private static CriticalRegion criticalRegion;
-    private static int size = 100;
+    private static int size = 101;
     private static List<Thread> arrayOfThreads = new ArrayList<>(Collections.nCopies(size, null));
     private static int writersLength = 100;
     private static int readersLength = 0;
@@ -33,25 +33,14 @@ public class Main {
 
             index++;
         }
-//
-//        for (int i = 0; i < size; i++) {
-//            System.out.println(arrayOfThreads.get(i));
-//        }
     }
 
     private static void _executeThreads() {
-        Thread object;
+        Thread thread;
 
         for (int i = 0; i < size; i++) {
-            object = arrayOfThreads.get(i);
-
-            if (object instanceof Writers) {
-                Writers writer = (Writers) object;
-                writer.start();
-            } else {
-                Readers reader = (Readers) object;
-                reader.start();
-            }
+            thread = arrayOfThreads.get(i);
+            thread.start();
         }
     }
 
@@ -72,12 +61,10 @@ public class Main {
         //Read file
         criticalRegion = new CriticalRegion("bd.txt");
 
-        System.out.println("Implamentation with readers and writers");
-
         start_implemantation = System.currentTimeMillis();
 
         // Repeat 50 times
-        while (writersLength != 0 && readersLength != 100) {
+        while (writersLength >= 0 && readersLength <= 100) {
             average = 0;
 
             for (int i = 0; i < timesForProportion; i++) {
@@ -120,6 +107,7 @@ public class Main {
         Long start;
         Long end;
 
+        System.out.println("Implamentation with readers and writers");
         start = System.currentTimeMillis();
 
         _run();
@@ -132,10 +120,14 @@ public class Main {
 
         // Instance lock for the second implemantation without writer and readers
         lock = new Lock();
-        System.out.println("first finish");
+
+        System.out.println("Implamentation without readers and writers");
         start = System.currentTimeMillis();
+
         _run();
+
         end = System.currentTimeMillis();
-        System.out.println("Duration of 1 implamentation = " + (end - start) + " ms ");
+
+        System.out.println("Duration of 2 implamentation = " + (end - start) + " ms ");
     }
 }
